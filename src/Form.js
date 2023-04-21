@@ -1,7 +1,28 @@
 import React from "react";
 import { Formik } from "formik";
+import * as yup from "yup";
 
 const Form = () => {
+  const validationSchema = yup.object().shape({
+    name: yup.string().required(),
+    email: yup.string().required().email(),
+    tel: yup
+      .number()
+      .typeError("Must be number!")
+      .required()
+      .positive()
+      .integer(),
+    amount: yup
+      .number()
+      .typeError("Must be number!")
+      .required()
+      .positive("Must be positive number!")
+      .integer(),
+    currency: "",
+    text: yup.string(),
+    terms: false,
+  });
+
   return (
     <Formik
       initialValues={{
@@ -13,6 +34,22 @@ const Form = () => {
         text: "",
         terms: false,
       }}
+      validationSchema={validationSchema}
+      onSubmit={(values, { setSubmitting }) => {
+        fetch("http://localhost:3001/forms", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(values),
+        })
+          .then((res) => {
+            setSubmitting(false);
+            if (res.ok) console.log(res, "Отправка успешна");
+          })
+          .catch((err) => {
+            setSubmitting(false);
+            console.log(err);
+          });
+      }}
     >
       {({
         values,
@@ -23,7 +60,7 @@ const Form = () => {
         handleSubmit,
         isSubmitting,
       }) => (
-        <form className="form">
+        <form className="form" onSubmit={handleSubmit}>
           <h2>Отправить пожертвование</h2>
           <label htmlFor="name">Ваше имя</label>
           <input
@@ -34,6 +71,7 @@ const Form = () => {
             onChange={handleChange}
             onBlur={handleBlur}
           />
+          {errors.name && touched.name && errors.name}
           <label htmlFor="email">Ваша почта</label>
           <input
             id="email"
@@ -43,6 +81,7 @@ const Form = () => {
             onChange={handleChange}
             onBlur={handleBlur}
           />
+          {errors.email && touched.email && errors.email}
           <label htmlFor="tel">Ваш телефон</label>
           <input
             id="tel"
@@ -52,6 +91,7 @@ const Form = () => {
             onChange={handleChange}
             onBlur={handleBlur}
           />
+          {errors.tel && touched.tel && errors.tel}
           <label htmlFor="amount">Количество</label>
           <input
             id="amount"
@@ -92,7 +132,9 @@ const Form = () => {
             />
             Соглашаетесь с политикой конфиденциальности?
           </label>
-          <button type="submit">Отправить</button>
+          <button type="submit" disabled={isSubmitting}>
+            Отправить
+          </button>
         </form>
       )}
     </Formik>

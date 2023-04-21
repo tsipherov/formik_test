@@ -4,23 +4,23 @@ import * as yup from "yup";
 
 const Form = () => {
   const validationSchema = yup.object().shape({
-    name: yup.string().required(),
-    email: yup.string().required().email(),
+    name: yup.string().required("field is required"),
+    email: yup.string().required("field is required").email(),
     tel: yup
       .number()
       .typeError("Must be number!")
-      .required()
+      .required("field is required")
       .positive()
       .integer(),
     amount: yup
       .number()
       .typeError("Must be number!")
-      .required()
+      .required("field is required")
       .positive("Must be positive number!")
       .integer(),
-    currency: "",
-    text: yup.string(),
-    terms: false,
+    currency: yup.string().required("field is required"),
+    text: yup.string().min(20, "min length of message must be 20 chars"),
+    terms: yup.boolean().oneOf([true], "You must confirm the privacy policy"),
   });
 
   return (
@@ -29,7 +29,7 @@ const Form = () => {
         name: "",
         email: "",
         tel: "",
-        amount: "",
+        amount: 0,
         currency: "",
         text: "",
         terms: false,
@@ -101,6 +101,7 @@ const Form = () => {
             onChange={handleChange}
             onBlur={handleBlur}
           />
+          {errors.amount && touched.amount && errors.amount}
           <label htmlFor="currency">Валюта</label>
           <select
             id="currency"
@@ -112,8 +113,9 @@ const Form = () => {
             <option value="">Выберите валюту</option>
             <option value="USD">USD</option>
             <option value="UAH">UAH</option>
-            <option value="RUB">RUB</option>
+            <option value="EUR">EUR</option>
           </select>
+          {errors.currency && touched.currency && errors.currency}
           <label htmlFor="text">Ваше сообщение</label>
           <textarea
             id="text"
@@ -122,16 +124,19 @@ const Form = () => {
             onChange={handleChange}
             onBlur={handleBlur}
           />
+          {errors.text && touched.text && errors.text}
           <label className="checkbox">
             <input
               name="terms"
               type="checkbox"
-              value={values.terms}
+              checked={values.terms}
+              //   value={values.terms}
               onChange={handleChange}
-              onBlur={handleBlur}
+              //   onBlur={handleBlur}
             />
             Соглашаетесь с политикой конфиденциальности?
           </label>
+          {errors.terms && touched.terms && errors.terms}
           <button type="submit" disabled={isSubmitting}>
             Отправить
           </button>
